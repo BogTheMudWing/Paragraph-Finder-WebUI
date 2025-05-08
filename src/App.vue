@@ -1,7 +1,7 @@
 <template>
   <div id="app">
     <div class="container">
-      <h1>Paragraph Counter</h1>
+      <h1>Paragraph Finder</h1>
 
       <!-- Form -->
       <form @submit.prevent="findParagraph">
