@@ -2,6 +2,8 @@
 
 A web frontend for [Paragraph Finder](https://github.com/BogTheMudWing/Paragraph-Finder).
 
+![The Paragraph Finder WebUI in a browser. The feilds are filled and there is a box at the bottom that says Paragraph Found, showing the paragraph number, the percent similarity, and the paragraph itself.](Showcase.png)
+
 ## Use
 
 ### Prerequisites
