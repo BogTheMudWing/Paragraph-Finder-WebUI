@@ -75,43 +75,56 @@
   </div>
 </template>
 
-<script>
+<script lang="ts">
+import { defineComponent, ref } from "vue";
 import axios from "axios";
 
-export default {
-  data() {
-    return {
-      bookName: "",
-      chapter: "",
-      paragraph: "",
-      result: null,
-      error: null,
-    };
-  },
-  methods: {
-    async findParagraph() {
-      this.result = null; // Clear previous result
-      this.error = null; // Clear any previous error
+interface ParagraphResult {
+  index?: number;
+  similarity_score?: number;
+  match?: string;
+  reason?: string;
+}
 
-      console.log(import.meta.env.VITE_APP_API_URL);
+export default defineComponent({
+  setup() {
+    const bookName = ref<string>("");
+    const chapter = ref<string>("");
+    const paragraph = ref<string>("");
+    const result = ref<ParagraphResult | null>(null);
+    const error = ref<string | null>(null);
+
+    const findParagraph = async () => {
+      result.value = null;
+      error.value = null;
 
       try {
         const response = await axios.post(import.meta.env.VITE_APP_API_URL, {
-          book_name: this.bookName,
-          chapter: this.chapter,
-          paragraph: this.paragraph,
+          book_name: bookName.value,
+          chapter: chapter.value,
+          paragraph: paragraph.value,
         });
 
-        if (response.data.index) {
-          this.result = response.data; // Update result with API response
+        if (response.data.index !== undefined) {
+          result.value = response.data;
         } else {
-          this.error = "An error occurred: " + response.data.reason;
+          error.value = "An error occurred: " + response.data.reason;
         }
-      } catch (err) {
-        // console.error("Error calling API:", err);
-        this.error = "An error occurred: " + err.response.data.reason;
+      } catch (err: any) {
+        error.value =
+          "An error occurred: " +
+          (err.response?.data?.reason || err.message || "Unknown error");
       }
-    },
+    };
+
+    return {
+      bookName,
+      chapter,
+      paragraph,
+      result,
+      error,
+      findParagraph,
+    };
   },
-};
+});
 </script>
