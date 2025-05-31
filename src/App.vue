@@ -21,7 +21,6 @@
               </option>
             </select>
           </div>
-          <label class="form-description">This should be the same as the article name on the wiki.</label>
         </div>
 
         <div class="block">
@@ -40,7 +39,6 @@
               </option>
             </select>
           </div>
-          <label class="form-description">This should be a number or a title like "prologue".</label>
         </div>
 
         <div class="block">
