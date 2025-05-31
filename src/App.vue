@@ -8,31 +8,39 @@
         <div class="block">
           <div class="form-group">
             <label for="bookName"><strong>Book Name: </strong></label>
-            <input
-              type="text"
+            <select
               id="bookName"
               v-model="bookName"
+              @change="fetchChapters"
               class="form-control"
               required
-              placeholder="Enter the book name"
-            />
+            >
+              <option value="" disabled selected>Select a book</option>
+              <option v-for="book in books" :key="book" :value="book">
+                {{ book }}
+              </option>
+            </select>
           </div>
-          <label class="form-description">This should be same as the article name on the wiki.</label>
+          <label class="form-description">This should be the same as the article name on the wiki.</label>
         </div>
 
         <div class="block">
           <div class="form-group">
             <label for="chapter"><strong>Chapter: </strong></label>
-            <input
-              type="text"
+            <select
               id="chapter"
               v-model="chapter"
               class="form-control"
               required
-              placeholder="Enter chapter"
-            />
+              :disabled="!chapters.length"
+            >
+              <option value="" disabled selected>Select a chapter</option>
+              <option v-for="ch in chapters" :key="ch" :value="ch">
+                {{ ch }}
+              </option>
+            </select>
           </div>
-          <label class="form-description">This should be a number or a title like prologue.</label>
+          <label class="form-description">This should be a number or a title like "prologue".</label>
         </div>
 
         <div class="block">
@@ -47,7 +55,7 @@
               placeholder="Enter the full paragraph to search for"
             ></textarea>
           </div>
-       </div>
+        </div>
 
         <button type="submit" class="btn btn-primary">Find Match</button>
       </form>
@@ -76,7 +84,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref } from "vue";
+import { defineComponent, ref, onMounted } from "vue";
 import axios from "axios";
 
 interface ParagraphResult {
@@ -94,12 +102,41 @@ export default defineComponent({
     const result = ref<ParagraphResult | null>(null);
     const error = ref<string | null>(null);
 
+    const books = ref<string[]>([]);
+    const chapters = ref<string[]>([]);
+
+    const apiBase = import.meta.env.VITE_APP_API_URL;
+
+    const fetchBooks = async () => {
+      try {
+        const response = await axios.get(`${apiBase}/books`);
+        books.value = response.data.available_books || [];
+      } catch (err) {
+        console.error("Failed to fetch books", err);
+        error.value = "Failed to load books. Please try again later.";
+      }
+    };
+
+    const fetchChapters = async () => {
+      chapters.value = [];
+      chapter.value = "";
+      if (!bookName.value) return;
+
+      try {
+        const response = await axios.get(`${apiBase}/books/${bookName.value}/chapters`);
+        chapters.value = response.data.available_chapters || [];
+      } catch (err) {
+        console.error("Failed to fetch chapters", err);
+        error.value = `Could not load chapters for book "${bookName.value}".`;
+      }
+    };
+
     const findParagraph = async () => {
       result.value = null;
       error.value = null;
 
       try {
-        const response = await axios.post(import.meta.env.VITE_APP_API_URL, {
+        const response = await axios.post(apiBase, {
           book_name: bookName.value,
           chapter: chapter.value,
           paragraph: paragraph.value,
@@ -117,6 +154,10 @@ export default defineComponent({
       }
     };
 
+    onMounted(() => {
+      fetchBooks();
+    });
+
     return {
       bookName,
       chapter,
@@ -124,6 +165,9 @@ export default defineComponent({
       result,
       error,
       findParagraph,
+      books,
+      chapters,
+      fetchChapters,
     };
   },
 });
